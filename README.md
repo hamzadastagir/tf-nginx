@@ -1,2 +1,3 @@
-# tf_nginx_proxy_server
+# Terraform NGINX Proxy Server 
+
 Terraform based NGINX Proxy Server infrastructure 
