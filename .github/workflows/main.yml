@@ -27,7 +27,9 @@ jobs:
       - name: Automatic Tagging of Releases
         id: increment-git-tag
         run: |
+          echo "Getting version tags "
           bash ./build/git_update.sh -v patch 
+          echo ${{ steps.increment-git-tag.outputs.git-tag }}
       
       - name: Build, Tag, and Push the Image to Amazon ECR
         if: contains( github.ref, 'main')
@@ -38,17 +40,22 @@ jobs:
           IMAGE_TAG: ${{ steps.increment-git-tag.outputs.git-tag }}
           # IMAGE_TAG: latest          
         run: |
+          echo "Building docker image"
           mkdir data/
           docker build --compress -t tf-nginx .
           docker save --output data/image.tar tf-nginx 
 
+          echo "Pushing development version"
           docker tag tf-nginx:latest $ECR_REPOSITORY:dev
-          docker push $ECR_REPOSITORY:dev
- 
-          export TAGGED_ECR_REPO=$ECR_REPO:$IMAGE_TAG
-          docker tag tf-nginx:latest $TAGGED_ECR_REPO
-          docker push $TAGGED_ECR_REPO
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:dev
 
+          echo "Pushing release version"
+          export $TAGGED_ECR_REPO=$ECR_REPO:$IMAGE_TAG
+          echo 
+          docker tag tf-nginx:latest $TAGGED_ECR_REPO
+          docker push $ECR_REGISTRY/$TAGGED_ECR_REPO
+
+          echo "Pushing latest version"
           docker tag $TAGGED_ECR_REPO $ECR_REPO:latest
-          docker push $ECR_REPO:latest
+          docker push $ECR_REGISTRY/$ECR_REPO:latest
 
