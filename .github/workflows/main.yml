@@ -30,8 +30,24 @@ jobs:
           echo "Getting version tags "
           bash ./build/git_update.sh -v patch 
           echo ${{ steps.increment-git-tag.outputs.git-tag }}
+
+      - name: Building Image
+        id: increment-git-tag
+        run: |
+          echo "Building docker image"
+          mkdir data/
+          docker build --compress -t tf-nginx . 
+          docker save --output data/image.tar tf-nginx
+
+      - name: Archive code coverage results
+        id: image-artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: image
+          paths: 
+            data/
       
-      - name: Build, Tag, and Push the Image to Amazon ECR
+      - name: Tag, and Push the Image to Amazon ECR
         if: contains( github.ref, 'main')
         id: build-image
         env:
@@ -42,20 +58,21 @@ jobs:
         run: |
           echo "Building docker image"
           mkdir data/
-          docker build --compress -t $ECR_REGISTRY/$ECR_REPOSITORY . 
-          docker save --output data/image.tar $ECR_REGISTRY/$ECR_REPOSITORY
+          docker build --compress -t tf-nginx . 
+          docker save --output data/image.tar tf-nginx
 
           echo "Pushing development version"
-          docker tag tf-nginx:latest $ECR_REPOSITORY:dev
+          docker load --input data/image.tar
+          docker tag tf-nginx:latest $ECR_REGISTRY/$ECR_REPOSITORY:dev
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:dev
 
           echo "Pushing release version"
-          export $TAGGED_ECR_REPO=$ECR_REPO:$IMAGE_TAG
-          echo 
+          export $TAGGED_ECR_REPO=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+
           docker tag tf-nginx:latest $TAGGED_ECR_REPO
           docker push $ECR_REGISTRY/$TAGGED_ECR_REPO
 
           echo "Pushing latest version"
-          docker tag $TAGGED_ECR_REPO $ECR_REPO:latest
-          docker push $ECR_REGISTRY/$ECR_REPO:latest
+          docker tag $TAGGED_ECR_REPO $ECR_REGISTRY/$ECR_REPOSITORY:latest
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
 
