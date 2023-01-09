@@ -52,6 +52,7 @@ jobs:
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITORY: tf-nginx
+          ECR_REPO: ${{secrets.ECR_REPO}}
           IMAGE_TAG: ${{ steps.increment-git-tag.outputs.git-tag }}
           # IMAGE_TAG: latest          
         run: |
