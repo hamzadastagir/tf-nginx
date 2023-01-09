@@ -1,4 +1,4 @@
-FROM nginxinc/nginx-unprivileged:1-alpha
+FROM nginxinc/nginx-unprivileged
 
 LABEL maintainer="maintainer@londonappdev.com"
 
