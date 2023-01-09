@@ -55,11 +55,7 @@ jobs:
           IMAGE_TAG: ${{ steps.increment-git-tag.outputs.git-tag }}
           # IMAGE_TAG: latest          
         run: |
-          echo "Building docker image"
-          mkdir data/
-          docker build --compress -t tf-nginx . 
-          docker save --output data/image.tar tf-nginx
-
+        
           echo "Pushing development version"
           docker load --input data/image.tar
           docker tag tf-nginx:latest $ECR_REGISTRY/$ECR_REPOSITORY:dev
