@@ -43,7 +43,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: image
-          paths: 
+          path: 
             data/
       
       - name: Tag, and Push the Image to Amazon ECR
