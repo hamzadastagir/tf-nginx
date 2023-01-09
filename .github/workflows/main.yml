@@ -46,12 +46,30 @@ jobs:
           path: 
             data/
       
-      - name: Tag, and Push the Image to Amazon ECR
+      - name: Tag, and Push dev version of the the Image to Amazon ECR
         if: contains( github.ref, 'main')
-        id: tag-and-push-image
+        id: tag-and-push-image-dev
         env:
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITORY: tf-nginx
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPO: ${{secrets.ECR_REPO}}
+         
+        run: |
+
+          echo "Loading Docker image"
+          docker load --input data/image.tar
+          
+          echo "Pushing development version"
+          docker tag tf-nginx:latest $ECR_REPO:dev
+          docker push $ECR_REPO:dev
+
+
+      - name: Tag, and Push release version of the the Image to Amazon ECR
+        if: contains( github.ref, 'main')
+        id: tag-and-push-image-dev
+        env:
+          ECR_REPOSITORY: tf-nginx
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPO: ${{secrets.ECR_REPO}}
           IMAGE_TAG: ${{ steps.increment-git-tag.outputs.git-tag }}
           # IMAGE_TAG: latest          
@@ -59,11 +77,6 @@ jobs:
 
           echo "Loading Docker image"
           docker load --input data/image.tar
-          
-
-          echo "Pushing development version"
-          docker tag tf-nginx:latest $ECR_REPO:dev
-          docker push $ECR_REPO:dev
 
           echo "Pushing release version"
           docker tag tf-nginx:latest $ECR_REPO:$IMAGE_TAG
@@ -72,4 +85,3 @@ jobs:
           echo "Pushing latest version"
           docker tag $ECR_REPO:$IMAGE_TAG $ECR_REPO:latest
           docker push $ECR_REPO:latest
-
