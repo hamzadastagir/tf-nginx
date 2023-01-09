@@ -42,8 +42,8 @@ jobs:
         run: |
           echo "Building docker image"
           mkdir data/
-          docker build --compress -t tf-nginx .
-          docker save --output data/image.tar tf-nginx 
+          docker build --compress -t $ECR_REGISTRY/$ECR_REPOSITORY . 
+          docker save --output data/image.tar $ECR_REGISTRY/$ECR_REPOSITORY
 
           echo "Pushing development version"
           docker tag tf-nginx:latest $ECR_REPOSITORY:dev
