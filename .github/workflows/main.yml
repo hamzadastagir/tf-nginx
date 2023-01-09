@@ -29,10 +29,9 @@ jobs:
         run: |
           echo "Getting version tags "
           bash ./build/git_update.sh -v patch 
-          echo ${{ steps.increment-git-tag.outputs.git-tag }}
 
       - name: Building Image
-        id: increment-git-tag
+        id: build-imagev1
         run: |
           echo "Building docker image"
           mkdir data/
@@ -49,7 +48,7 @@ jobs:
       
       - name: Tag, and Push the Image to Amazon ECR
         if: contains( github.ref, 'main')
-        id: build-image
+        id: tag-and-push-image
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITORY: tf-nginx
